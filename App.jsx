@@ -1,137 +1,66 @@
+import React, { useEffect, useState } from 'react';
+import { Provider, useDispatch } from 'react-redux';
+import { NavigationContainer } from '@react-navigation/native';
+import ErrorBoundary from 'react-native-error-boundary';
+import { View, ActivityIndicator } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
-// import { NavigationContainer } from "@react-navigation/native";
-// import MainTabNavigator from "./src/navigation/TabNavigator";
-// import ErrorBoundary from "./src/components/ErrorBoundary";
-// import { Provider, useDispatch } from "react-redux";
-// import Storee from "./src/redux/store"
-// import { ThemeProvider, ThemeProviderr } from "./src/redux/contextapi"
-// import { useEffect } from "react";
-// import AsyncStorage from "@react-native-async-storage/async-storage";
-// import { setUserFromStorage } from "./src/redux/slice";
-
-
-
-
-// const AppStartup = ({ children }) => {
-//   const dispatch = useDispatch();
-
-//   useEffect(() => {
-//     const loadUser = async () => {
-//       try {
-//         const storedUser = await AsyncStorage.getItem("user");
-//         if (storedUser) {
-//           console.log('firest laod ok now')
-//           dispatch(setUserFromStorage(JSON.parse(storedUser)));
-//         }
-//         else {
-//           console.log('not axit user')
-//         }
-
-//       } catch (err) {
-//         console.log("Error loading user:", err);
-//       }
-//     };
-//     loadUser();
-//   }, [dispatch]);
-
-//   return children;
-// };
-
-// export default function App() {
-//   return (
-//     <Provider store={Storee}>
-
-//       <ThemeProvider>
-
-//         <AppStartup>
-
-
-//           <ErrorBoundary>
-//             <NavigationContainer>
-//               <MainTabNavigator />
-//             </NavigationContainer>
-//           </ErrorBoundary>
-//         </AppStartup>
-//       </ThemeProvider>
-
-//     </Provider>
-//   );
-// }
-
-
-
-
-
-
-
-
-
-import { NavigationContainer } from "@react-navigation/native";
-import MainTabNavigator from "./src/navigation/TabNavigator";
-import ErrorBoundary from "./src/components/ErrorBoundary";
-import { Provider, useDispatch } from "react-redux";
 import Storee from "./src/redux/store";
-import { ThemeProvider, useTheme } from "./src/redux/contextapi"; // ThemeProvider + useTheme
-import { useEffect } from "react";
-import AsyncStorage from "@react-native-async-storage/async-storage";
-import { setUserFromStorage } from "./src/redux/slice";
-import Toast from "./src/components/toast";
+import StackNavigator from './src/navigaton/StackNavigator';
+import ErrorScreen from './src/componet/errorboundary';
+import { setUserFromStorage } from './src/redux/slice';
+// Sahi path check kar lena
 
-// 🔹 AppStartup logic (load user from AsyncStorage)
-const AppStartup = ({ children }) => {
+const AppContent = () => {
   const dispatch = useDispatch();
+  const [isReady, setIsReady] = useState(false);
 
   useEffect(() => {
     const loadUser = async () => {
       try {
-        const storedUser = await AsyncStorage.getItem("user");
-        if (storedUser) {
-          console.log('First load ok', storedUser);
-          dispatch(setUserFromStorage(JSON.parse(storedUser)));
-        } else {
-          console.log('No existing user');
+        // 1. Phone se data uthao
+        const savedUser = await AsyncStorage.getItem("user");
+
+        console.log('userdata', savedUser)
+        if (savedUser) {
+          console.log('userdata')
+          // 2. Redux mein daal do
+          dispatch(setUserFromStorage(JSON.parse(savedUser)));
         }
-      } catch (err) {
-        console.log("Error loading user:", err);
+      } catch (e) {
+        console.log("Error loading user:", e);
+      } finally {
+        // 3. App ready kar do
+        setIsReady(true);
       }
     };
     loadUser();
   }, [dispatch]);
 
-  return children;
+  // Jab tak check ho raha hai, tab tak loader dikhao
+  if (!isReady) {
+    return (
+      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#fff' }}>
+        <ActivityIndicator size="large" color="#F54D27" />
+      </View>
+    );
+  }
+
+  return (
+    <NavigationContainer>
+      <StackNavigator />
+    </NavigationContainer>
+  );
 };
 
-// 🔹 AppWrapper – Toast yahan render hoga
-function AppWrapper() {
-  const { toastMessage, toastType, hideToast } = useTheme();
-
-  return (
-    <>
-      <NavigationContainer>
-        <MainTabNavigator />
-      </NavigationContainer>
-
-      {/* 🔥 Top-level Toast */}
-      <Toast
-        message={toastMessage}
-        type={toastType} // "error" or "success"
-        onHide={hideToast} // auto reset
-      />
-    </>
-  );
-}
-
-// 🔹 Main App
-export default function App() {
+const App = () => {
   return (
     <Provider store={Storee}>
-      <ThemeProvider>
-        <AppStartup>
-          <ErrorBoundary>
-            <AppWrapper />
-          </ErrorBoundary>
-        </AppStartup>
-      </ThemeProvider>
+      <ErrorBoundary FallbackComponent={ErrorScreen}>
+        <AppContent />
+      </ErrorBoundary>
     </Provider>
   );
-}
+};
+
+export default App;
