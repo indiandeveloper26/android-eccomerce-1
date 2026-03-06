@@ -8,6 +8,7 @@ import Icon from 'react-native-vector-icons/Ionicons';
 import { useGetProductsQuery } from '../redux/productslice';
 import { useSelector } from 'react-redux';
 import { useNavigation } from '@react-navigation/native';
+import Productslide from './slider';
 
 
 const { width } = Dimensions.get('window');
@@ -54,9 +55,16 @@ export default function ProductsScreen({ navigation }) {
                     value={search}
                     onChangeText={setSearch}
                 />
+
             </View>
+
+
+            <Productslide />
         </View>
     );
+
+
+
 
     const ProductCard = ({ item }) => {
         const ratingValue = useMemo(() => {
@@ -80,7 +88,7 @@ export default function ProductsScreen({ navigation }) {
             >
                 <View style={styles.imageBox}>
                     <Image
-                        source={{ uri: `http://192.168.31.144:3000/${item.images}` || 'https://via.placeholder.com/150' }}
+                        source={{ uri: `https://eccomerce-wine.vercel.app/${item.images}` || 'https://via.placeholder.com/150' }}
                         style={styles.img}
                         resizeMode="cover"
                     />

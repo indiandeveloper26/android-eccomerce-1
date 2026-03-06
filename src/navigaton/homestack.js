@@ -1,75 +1,73 @@
 import React from 'react';
-import { TouchableOpacity, View, Text, StyleSheet, Platform } from 'react-native';
+import { TouchableOpacity, View, Text, StyleSheet, Platform, StatusBar } from 'react-native';
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Feather from 'react-native-vector-icons/Feather';
-
-// Screens
-import ProductsScreen from "../componet/prodcuts";
-import CartScreen from "../screen/cart";
+import { useSelector } from "react-redux";
 import { useNavigation } from '@react-navigation/native';
+import ProductsScreen from '../componet/prodcuts';
+import CartScreen from '../screen/cart';
 
 const Stack = createNativeStackNavigator();
 
 export default function HomeStackNavigator() {
     const insets = useSafeAreaInsets();
-
-    let navigation = useNavigation()
-
-    // Custom Header Component taaki dono screen pe same dikhe
-    const BrandHeader = (safeTop) => (
-        <View style={{ marginTop: safeTop }}>
-            <Text style={styles.brandTitle}>
-                CORE<Text style={{ color: '#F54D27' }}>CART</Text>
-            </Text>
-        </View>
-    );
-
-    const safeTop = Platform.OS === 'android' ? insets.top + 5 : 0;
+    const navigation = useNavigation();
+    const { user } = useSelector((state) => state.auth);
+    let cartCount = user?.cart?.length || 0;
 
     return (
         <Stack.Navigator
-            initialRouteName="Home" // Pehle Home dikhega
+            initialRouteName="Home"
             screenOptions={{
                 headerShown: true,
-                headerStyle: {
-                    backgroundColor: '#fff',
-                    // Compact and clean height
-                    height: Platform.OS === 'ios' ? 60 + insets.top : 70 + insets.top,
-                },
                 headerShadowVisible: false,
                 headerTitleAlign: 'center',
-                headerTitle: () => BrandHeader(safeTop),
+                headerStyle: {
+                    backgroundColor: '#fff',
+                },
+                // ✅ Ye line status bar ke niche padding auto-adjust karegi
+                headerStatusBarHeight: insets.top,
+                headerTitleStyle: {
+                    fontWeight: '900',
+                },
             }}
         >
-            {/* HOME SCREEN */}
             <Stack.Screen
                 name="Home"
                 component={ProductsScreen}
                 options={{
-
+                    // Brand Logo
+                    headerTitle: () => (
+                        <Text style={styles.brandTitle}>
+                            CORE<Text style={{ color: '#F54D27' }}>CART</Text>
+                        </Text>
+                    ),
+                    // Right Side Cart Icon
                     headerRight: () => (
                         <TouchableOpacity
                             onPress={() => navigation.navigate('cart')}
-                            style={[styles.headerBtn, { marginTop: safeTop, marginRight: 10 }]}
+                            style={styles.headerBtn}
                         >
-                            <View>
-                                <Feather name="shopping-bag" size={24} color="#111827" />
-                                <View style={styles.badgeDot} />
-                            </View>
+                            <Feather name="shopping-bag" size={24} color="#111827" />
+                            {cartCount > 0 && (
+                                <View style={styles.badge}>
+                                    <Text style={styles.badgeText}>{cartCount}</Text>
+                                </View>
+                            )}
                         </TouchableOpacity>
                     ),
                 }}
             />
 
-            {/* CART SCREEN */}
             <Stack.Screen
                 name="cart"
                 component={CartScreen}
                 options={{
-                    // Cart screen pe back button dikhana hai toh yahan custom headerLeft de sakte ho
                     headerTitle: "MY CART",
                     headerTitleStyle: styles.cartTitleStyle,
+                    // Back arrow ko status bar se chipakne se rokne ke liye
+                    headerLeftContainerStyle: { paddingLeft: 10 },
                 }}
             />
         </Stack.Navigator>
@@ -78,32 +76,38 @@ export default function HomeStackNavigator() {
 
 const styles = StyleSheet.create({
     brandTitle: {
-        fontSize: 22,
+        fontSize: 20,
         fontWeight: '900',
         fontStyle: 'italic',
         color: '#111827',
-        letterSpacing: -1,
     },
     cartTitleStyle: {
         fontSize: 18,
         fontWeight: '900',
-        color: '#111827',
     },
     headerBtn: {
         width: 40,
         height: 40,
         justifyContent: 'center',
         alignItems: 'center',
+        marginRight: 5, // Screen edge se thoda gap
     },
-    badgeDot: {
-        position: 'absolute',
-        top: -2,
-        right: -2,
-        width: 10,
-        height: 10,
-        borderRadius: 5,
-        backgroundColor: '#F54D27',
+    badge: {
+        position: "absolute",
+        top: 2,
+        right: 2,
+        backgroundColor: "#F54D27",
+        borderRadius: 9,
+        minWidth: 18,
+        height: 18,
+        justifyContent: "center",
+        alignItems: "center",
         borderWidth: 2,
         borderColor: '#fff',
+    },
+    badgeText: {
+        color: "#fff",
+        fontSize: 10,
+        fontWeight: "900",
     }
 });

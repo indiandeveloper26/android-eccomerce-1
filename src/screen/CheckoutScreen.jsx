@@ -9,6 +9,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import Feather from 'react-native-vector-icons/Feather';
 import api from '../componet/axios';
 import url from "../componet/url"
+import { useNotify } from '../redux/contextapi';
 const { width } = Dimensions.get('window');
 
 export default function CheckoutScreen() {
@@ -22,6 +23,8 @@ export default function CheckoutScreen() {
     const [loading, setLoading] = useState(true);
     const [userId, setUserId] = useState("");
     const [placingOrder, setPlacingOrder] = useState(false);
+
+    const { showNotify } = useNotify();
 
     useEffect(() => {
         const prepareCheckout = async () => {
@@ -62,7 +65,8 @@ export default function CheckoutScreen() {
             });
 
             if (res.data.success) {
-                Alert.alert("Success", "Order secured successfully!");
+
+                showNotify("Success Order secured successfully!");
                 if (paymentMethod === "Online") {
                     // Navigate to Payment Screen
                     navigation.navigate('payment', { orderId: res.data.order._id });
@@ -208,7 +212,7 @@ export default function CheckoutScreen() {
 }
 
 const styles = StyleSheet.create({
-    container: { flex: 1, backgroundColor: '#f9fafb' },
+    container: { flex: 1, backgroundColor: '#f9fafb', marginTop: 22 },
     center: { flex: 1, justifyContent: 'center', alignItems: 'center' },
     loadingText: { marginTop: 15, fontSize: 10, fontWeight: '900', color: '#9ca3af', letterSpacing: 2 },
 

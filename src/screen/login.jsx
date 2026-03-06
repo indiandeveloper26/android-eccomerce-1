@@ -8,13 +8,17 @@ import { login } from "../redux/slice"; // Apna path check karein
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import axios from "axios";
 import api from "../componet/axios";
+import { useNotify } from "../redux/contextapi";
 
 const { width } = Dimensions.get("window");
+
 
 export default function LoginScreen({ navigation }) {
     const [form, setForm] = useState({ email: "", password: "" });
     const [loading, setLoading] = useState(false);
     const dispatch = useDispatch();
+
+    const { showNotify } = useNotify();
 
     const handleSubmit = async () => {
         if (!form.email || !form.password) {
@@ -29,14 +33,19 @@ export default function LoginScreen({ navigation }) {
 
             console.log('userres', res)
 
+
             if (res.data.login === "true") {
+                console.log('login')
                 const userdata = res.data.user;
                 // Storage mein save karo taaki refresh pe udde nahi
                 await AsyncStorage.setItem("id", userdata._id);
                 await AsyncStorage.setItem("user", JSON.stringify(userdata));
 
+                console.log('login')
+
                 dispatch(login(userdata));
-                // navigation.replace("MainTabs");
+                navigation.replace("MainTabs");
+                showNotify("login successfully!", "success");
             } else {
                 Alert.alert("Login Failed", res.data.error || "Invalid credentials");
             }

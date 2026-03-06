@@ -239,6 +239,7 @@ import RazorpayCheckout from 'react-native-razorpay';
 import Feather from 'react-native-vector-icons/Feather';
 import api from '../componet/axios';
 import { useSelector } from 'react-redux';
+import { useNotify } from '../redux/contextapi';
 
 export default function PaymentScreen({ route, navigation }) {
     // Destructure orderId from route params
@@ -250,13 +251,18 @@ export default function PaymentScreen({ route, navigation }) {
     // Safe check for userId
     const userid = user?.data?.userId;
 
+    const { showNotify } = useNotify();
+
+
     useEffect(() => {
         const fetchOrder = async () => {
             try {
                 const { data } = await api.get(`/api/order/${orderId}`);
                 setOrder(data.order);
             } catch (err) {
-                Alert.alert("Error", "Failed to load order details");
+
+                showNotify("Error", "Failed to load order details");
+
             } finally {
                 setLoading(false);
             }
@@ -266,7 +272,8 @@ export default function PaymentScreen({ route, navigation }) {
 
     const handlePayment = async () => {
         if (!order || !userid) {
-            Alert.alert("Error", "Session expired. Please log in again.");
+
+            showNotify("ErrorSession expired. Please log in again");
             return;
         }
 
@@ -301,17 +308,18 @@ export default function PaymentScreen({ route, navigation }) {
                         razorpay_order_id: data.razorpay_order_id,
                         razorpay_signature: data.razorpay_signature,
                     });
-                    Alert.alert("Success", "Payment Successful!");
+                    showNotify("Success Payment Successful!");
+
                     navigation.navigate("orders");
                 } catch (err) {
-                    Alert.alert("Error", "Verification failed. Contact support.");
+                    showNotify("Error Verification failed. Contact support.");
                 }
             }).catch((error) => {
-                Alert.alert("Payment Cancelled", `Error: ${error.description}`);
+                showNotify("Payment Cancelled",);
             });
 
         } catch (err) {
-            Alert.alert("Error", "Could not initiate payment");
+            showNotify("Error Could not initiate payment");
         }
     };
 

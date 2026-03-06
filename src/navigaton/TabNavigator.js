@@ -8,10 +8,17 @@ import ProductsScreen from "../componet/prodcuts"
 import HomeStackNavigaton from "../navigaton/homestack"
 import OrdersScreen from '../screen/order';
 import ProfileScreen from "../screen/profile"
+import { useSelector } from 'react-redux';
+import Notifu from '../componet/text';
 
 const Tab = createBottomTabNavigator();
 
 export default function TabNavigator() {
+
+    const { user } = useSelector((state) => state.auth);
+    let order = user?.orders?.length || 0
+
+    console.log('userdata', order)
     return (
         <Tab.Navigator
             screenOptions={({ route }) => ({
@@ -38,7 +45,8 @@ export default function TabNavigator() {
             })}
         >
             <Tab.Screen name="Home" component={HomeStackNavigaton} />
-            <Tab.Screen name="Orders" component={OrdersScreen} options={{ tabBarBadge: 6 }} />
+            <Tab.Screen name="test" component={Notifu} />
+            <Tab.Screen name="Orders" component={OrdersScreen} options={{ tabBarBadge: order }} />
             <Tab.Screen name="Profile" component={ProfileScreen} />
         </Tab.Navigator>
     );

@@ -9,7 +9,9 @@ import Storee from "./src/redux/store";
 import StackNavigator from './src/navigaton/StackNavigator';
 import ErrorScreen from './src/componet/errorboundary';
 import { setUserFromStorage } from './src/redux/slice';
-// Sahi path check kar lena
+
+// --- Notification Provider Import ---
+import { NotificationProvider } from "./src/redux/contextapi";
 
 const AppContent = () => {
   const dispatch = useDispatch();
@@ -18,26 +20,19 @@ const AppContent = () => {
   useEffect(() => {
     const loadUser = async () => {
       try {
-        // 1. Phone se data uthao
         const savedUser = await AsyncStorage.getItem("user");
-
-        console.log('userdata', savedUser)
         if (savedUser) {
-          console.log('userdata')
-          // 2. Redux mein daal do
           dispatch(setUserFromStorage(JSON.parse(savedUser)));
         }
       } catch (e) {
         console.log("Error loading user:", e);
       } finally {
-        // 3. App ready kar do
         setIsReady(true);
       }
     };
     loadUser();
   }, [dispatch]);
 
-  // Jab tak check ho raha hai, tab tak loader dikhao
   if (!isReady) {
     return (
       <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#fff' }}>
@@ -47,9 +42,12 @@ const AppContent = () => {
   }
 
   return (
-    <NavigationContainer>
-      <StackNavigator />
-    </NavigationContainer>
+    // NotificationProvider ko yahan wrap kiya hai
+    <NotificationProvider>
+      <NavigationContainer>
+        <StackNavigator />
+      </NavigationContainer>
+    </NotificationProvider>
   );
 };
 

@@ -8,6 +8,7 @@ import { useDispatch } from 'react-redux';
 import { login } from '../redux/slice';
 import api from "../componet/axios";
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useNotify } from '../redux/contextapi';
 
 const { width } = Dimensions.get('window');
 
@@ -20,6 +21,9 @@ export default function SignupScreen({ navigation }) {
 
     const isDark = false; // Set to false for White/Orange theme
     const dispatch = useDispatch();
+
+
+    const { showNotify } = useNotify();
 
 
     const handleSubmit = async () => {
@@ -51,9 +55,10 @@ export default function SignupScreen({ navigation }) {
                 console.log('resdta22')
                 // Dispatch to Redux
                 dispatch(login({ data }));
+                showNotify("singup successfully")
 
                 // Navigation (Next.js router ki jagah)
-                // navigation.replace("Home");
+                navigation.replace("MainTabs");
             } else {
                 setMessage(data.message || "Error occurred during signup.");
             }

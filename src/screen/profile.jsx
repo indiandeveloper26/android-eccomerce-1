@@ -62,7 +62,7 @@ export default function ProfileScreen({ navigation }) {
                 <Feather name="alert-circle" size={50} color="#F54D27" />
                 <Text style={styles.deniedTitle}>Access Denied</Text>
                 <Text style={styles.deniedSub}>Please login to view your profile.</Text>
-                <TouchableOpacity style={styles.loginBtn} onPress={() => navigation.navigate('Login')}>
+                <TouchableOpacity style={styles.loginBtn} onPress={() => navigation.navigate('login')}>
                     <Text style={styles.loginBtnText}>GO TO LOGIN</Text>
                 </TouchableOpacity>
             </View>

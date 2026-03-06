@@ -1,21 +1,16 @@
 import React, { useEffect, useState } from 'react';
 import {
-    View,
-    Text,
-    Image,
-    FlatList,
-    StyleSheet,
-    TouchableOpacity,
-    ActivityIndicator,
-    SafeAreaView,
-    StatusBar
+    View, Text, Image, FlatList, StyleSheet, TouchableOpacity,
+    ActivityIndicator, SafeAreaView, StatusBar, Platform
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Feather from 'react-native-vector-icons/Feather';
-import api from '../componet/axios'; // Apka axios instance
+import { useNavigation } from '@react-navigation/native';
+import api from '../componet/axios';
 import url from '../componet/url';
 
 export default function OrdersScreen() {
+    const navigation = useNavigation();
     const [orders, setOrders] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
@@ -32,9 +27,7 @@ export default function OrdersScreen() {
                 setError("Please login to see orders");
                 return;
             }
-
             const res = await api.get(`/api/order/orderdata/${userId}`);
-            console.log('orersdata', res)
             if (res.data.success) {
                 setOrders(res.data.data.orders || []);
             }
@@ -45,7 +38,7 @@ export default function OrdersScreen() {
         }
     };
 
-    const renderOrderItem = ({ item, index }) => (
+    const renderOrderItem = ({ item }) => (
         <View style={styles.orderCard}>
             <View style={styles.cardHeader}>
                 <View style={styles.orderInfo}>
@@ -71,7 +64,7 @@ export default function OrdersScreen() {
                 {item.products.map((prod, idx) => (
                     <View key={idx} style={styles.productRow}>
                         <Image
-                            source={{ uri: `${url}/${prod.product?.images?.[0]}` || 'https://via.placeholder.com/150' }}
+                            source={{ uri: `${url}/${prod.product?.images?.[0]}` }}
                             style={styles.productImg}
                         />
                         <View style={styles.productDetails}>
@@ -115,15 +108,22 @@ export default function OrdersScreen() {
 
     return (
         <SafeAreaView style={styles.container}>
-            <StatusBar barStyle="dark-content" />
+            <StatusBar barStyle="dark-content" backgroundColor="#F9FAFB" />
 
-            <View style={styles.headerSection}>
-                <Text style={styles.subTitle}>YOUR HISTORY</Text>
-                <View style={styles.titleRow}>
+            {/* --- CUSTOM RESPONSIVE HEADER WITH BACK BUTTON --- */}
+            <View style={styles.navBar}>
+                <TouchableOpacity
+                    onPress={() => navigation.goBack()}
+                    style={styles.backCircle}
+                >
+                    <Feather name="arrow-left" size={22} color="#111827" />
+                </TouchableOpacity>
+                <View style={styles.headerTitleContainer}>
+                    <Text style={styles.subTitle}>YOUR HISTORY</Text>
                     <Text style={styles.mainTitle}>My Orders<Text style={{ color: '#F54D27' }}>.</Text></Text>
-                    <View style={styles.countBadge}>
-                        <Text style={styles.countText}>{orders.length}</Text>
-                    </View>
+                </View>
+                <View style={styles.countBadge}>
+                    <Text style={styles.countText}>{orders.length}</Text>
                 </View>
             </View>
 
@@ -146,57 +146,81 @@ export default function OrdersScreen() {
 }
 
 const styles = StyleSheet.create({
-    container: { flex: 1, backgroundColor: '#F9FAFB' },
+    container: { flex: 1, backgroundColor: '#F9FAFB', marginTop: 11 },
     center: { flex: 1, justifyContent: 'center', alignItems: 'center' },
-    headerSection: { padding: 25, paddingTop: 40 },
-    subTitle: { fontSize: 10, fontWeight: '900', color: '#F54D27', letterSpacing: 3, marginBottom: 5 },
-    titleRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-    mainTitle: { fontSize: 34, fontWeight: '900', fontStyle: 'italic', color: '#111827' },
-    countBadge: { backgroundColor: '#111827', paddingHorizontal: 15, paddingVertical: 5, borderRadius: 12 },
-    countText: { color: '#fff', fontWeight: '900' },
 
+    // Header Styling
+    navBar: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        paddingHorizontal: 20,
+        paddingTop: Platform.OS === 'android' ? 15 : 10,
+        paddingBottom: 20,
+        gap: 15
+    },
+    backCircle: {
+        width: 45,
+        height: 45,
+        borderRadius: 22.5,
+        backgroundColor: '#fff',
+        justifyContent: 'center',
+        alignItems: 'center',
+        elevation: 3,
+        shadowColor: "#000",
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.1,
+        shadowRadius: 5,
+    },
+    headerTitleContainer: { flex: 1 },
+    subTitle: { fontSize: 9, fontWeight: '900', color: '#F54D27', letterSpacing: 2 },
+    mainTitle: { fontSize: 24, fontWeight: '900', color: '#111827' },
+
+    countBadge: { backgroundColor: '#111827', paddingHorizontal: 12, paddingVertical: 6, borderRadius: 12 },
+    countText: { color: '#fff', fontSize: 12, fontWeight: '900' },
+
+    // Card Styling
     listPadding: { paddingHorizontal: 20, paddingBottom: 40 },
     orderCard: {
         backgroundColor: '#fff',
-        borderRadius: 30,
+        borderRadius: 25,
         marginBottom: 20,
         padding: 20,
+        elevation: 4,
         shadowColor: "#000",
-        shadowOffset: { width: 0, height: 10 },
+        shadowOffset: { width: 0, height: 5 },
         shadowOpacity: 0.05,
-        shadowRadius: 20,
-        elevation: 5
+        shadowRadius: 10,
     },
-    cardHeader: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 20 },
-    orderInfo: { flexDirection: 'row', alignItems: 'center', gap: 12 },
-    packageBox: { backgroundColor: '#F3F4F6', padding: 10, borderRadius: 15 },
-    label: { fontSize: 8, fontWeight: '900', color: '#9ca3af', letterSpacing: 1 },
-    orderIdText: { fontSize: 14, fontWeight: 'bold', color: '#111827' },
-    statusBadge: { paddingHorizontal: 12, paddingVertical: 6, borderRadius: 20 },
-    statusText: { fontSize: 10, fontWeight: '900' },
+    cardHeader: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 15 },
+    orderInfo: { flexDirection: 'row', alignItems: 'center', gap: 10 },
+    packageBox: { backgroundColor: '#F3F4F6', padding: 8, borderRadius: 12 },
+    label: { fontSize: 8, fontWeight: '900', color: '#9ca3af', letterSpacing: 0.5 },
+    orderIdText: { fontSize: 13, fontWeight: 'bold', color: '#111827' },
+    statusBadge: { paddingHorizontal: 10, paddingVertical: 5, borderRadius: 15 },
+    statusText: { fontSize: 9, fontWeight: '900' },
 
-    productsList: { marginBottom: 20 },
-    productRow: { flexDirection: 'row', alignItems: 'center', gap: 12, marginBottom: 12 },
-    productImg: { width: 50, height: 50, borderRadius: 12, backgroundColor: '#F3F4F6' },
+    productsList: { marginBottom: 15 },
+    productRow: { flexDirection: 'row', alignItems: 'center', gap: 12, marginBottom: 10 },
+    productImg: { width: 45, height: 45, borderRadius: 10, backgroundColor: '#F3F4F6' },
     productDetails: { flex: 1 },
-    productName: { fontSize: 13, fontWeight: '900', textTransform: 'uppercase', color: '#111827' },
-    productMeta: { fontSize: 10, color: '#9ca3af', marginTop: 2 },
+    productName: { fontSize: 12, fontWeight: '900', color: '#111827' },
+    productMeta: { fontSize: 10, color: '#9ca3af' },
 
     cardFooter: {
         flexDirection: 'row',
         justifyContent: 'space-between',
         alignItems: 'center',
-        paddingTop: 15,
+        paddingTop: 12,
         borderTopWidth: 1,
         borderTopColor: '#F3F4F6',
         borderStyle: 'dashed'
     },
-    totalPrice: { fontSize: 22, fontWeight: '900', color: '#F54D27', fontStyle: 'italic' },
-    detailBtn: { backgroundColor: '#111827', padding: 12, borderRadius: 15 },
+    totalPrice: { fontSize: 20, fontWeight: '900', color: '#F54D27', fontStyle: 'italic' },
+    detailBtn: { backgroundColor: '#111827', padding: 10, borderRadius: 12 },
 
-    dateBar: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 5, marginTop: 15, opacity: 0.5 },
-    dateText: { fontSize: 9, fontWeight: '900', color: '#9ca3af', letterSpacing: 1 },
+    dateBar: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 5, marginTop: 12 },
+    dateText: { fontSize: 9, fontWeight: '900', color: '#d1d5db' },
 
-    emptyContainer: { flex: 1, justifyContent: 'center', alignItems: 'center', marginTop: 100 },
-    emptyText: { marginTop: 15, fontSize: 16, fontWeight: '900', color: '#d1d5db', textTransform: 'uppercase' }
+    emptyContainer: { flex: 1, justifyContent: 'center', alignItems: 'center' },
+    emptyText: { marginTop: 15, fontSize: 14, fontWeight: '900', color: '#d1d5db' }
 });
